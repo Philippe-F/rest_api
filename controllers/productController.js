@@ -36,15 +36,31 @@ async function getProduct(req, res, id) {
 // @Route  POST api/products
 async function createProduct(req, res, id) {
   try {
-    const product = {
-      title: 'Test Product',
-      description: 'This is My Product',
-      price: 1000
-    }
+    // Buffer 
+    let body = ''
 
-    const newProduct = await Product.create(product) 
-    res.writeHead(201, { 'Content-Type': 'application/json' }) 
-    res.end(JSON.stringify(newProduct))
+    // The data from the client comes in as a stream (not all at once). 
+    // We must convert and add the chunks (of data from the client) to the body as it comes in.
+    req.on('data', (chunk) => {
+      body += chunk.toString()
+    })
+
+    // Once all of the data has come in, we parse it from a JSON string into a JSON object.
+    // and extract the values.
+    req.on('end', async () => {
+      const { title, description, price } = JSON.parse(body) 
+
+      // Create a new object with the extracted values. 
+      const product = {
+        title,
+        description, 
+        price
+      }
+      
+      const newProduct = await Product.create(product)
+      res.writeHead(201, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(newProduct))
+    }) 
   } catch (error) {
     console.log(error)
   }
