@@ -6,3 +6,6 @@ function findAll() {
   })
 }
 
+module.export = {
+  findAll
+}
